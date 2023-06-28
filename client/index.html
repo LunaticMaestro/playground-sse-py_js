@@ -1,0 +1,57 @@
+<!-- 
+    Reference: https://www.woolha.com/tutorials/node-js-sse-server-sent-events-example-javascript-client
+    
+ -->
+<!DOCTYPE html>
+<head></head>
+<script>
+    let connection = null;
+
+    function foo(){
+        const es = new EventSource('http://localhost:8001/get_words');
+        
+        const listener_open = ()=>{
+            //global
+            connection = es
+            // output reset
+            ele = document.getElementById("output");
+            ele.innerHTML = '';
+        }
+
+        const listener_incoming = function (event) {
+            const type = event.type;
+            console.log(event)
+            // output append
+            element = document.getElementById("output");
+            element.innerHTML +=  `<br>`+`${type}: ${event.data}`;
+            console.log(es.readyState)
+        };
+
+        const listener_error = (event)=>{
+            // There seemse inherent problem that this gets called
+            //  at the end of the stream
+            // Other problem is error message of the event cannot be probed :( 
+            console.log("Error in SSE")
+            es.close()
+        }
+
+        const listener_end = (event)=>{
+            console.log("END")
+            es.close()
+        }
+        es.addEventListener('open', listener_open);
+        es.addEventListener('message', listener_incoming);
+        es.addEventListener('error', listener_error);
+        es.addEventListener('result', listener_end);
+    }
+
+    function stop(){ connection.close()}
+</script>
+<body>
+
+    <button onclick="foo()">Get stream</button>
+    <button onclick="stop()">Stop stream</button>
+
+
+    <div id="output"></div>
+</body>
